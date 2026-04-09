@@ -80,6 +80,7 @@ typedef enum
 	USBcom_Launch_Calibration,
 	USBcom_ConfigTester,
 	USBcom_ConfigTesterTimers,
+	USBcom_ConfigGear,
 	USBcom_Default,
 
 }USBcom;
@@ -102,6 +103,7 @@ typedef enum
 	USBcomAnswer_Launch_Calibration,
 	USBcomAnswer_ConfigTester,
 	USBcomAnswer_ConfigTesterTimers,
+	USBcomAnswer_ConfigGear,
 }USBcomAnswer;
 
 typedef struct flagy {
@@ -117,6 +119,7 @@ typedef struct flagy {
 	uint16_t Voltage;
 	uint16_t Current;
 	uint16_t Impuls;
+	uint16_t GearVoltage;   /* run-in voltage (0.1V units, same as Voltage); 0 = no gear warmup */
 }FLAGY;
 
 typedef struct commands {
@@ -131,6 +134,7 @@ typedef struct tset {
 	uint8_t Magnets;
 	uint16_t TimeMotorRun;
 	uint16_t TimeResMeasure;
+	uint16_t TimeGearRun;   /* run-in duration in seconds; 0 = no gear warmup */
 }TSET;
 
 //GOM_RXBUFFER_SIZE musi byt mensi nez GOM_RXBUFFER_IT_SIZE
