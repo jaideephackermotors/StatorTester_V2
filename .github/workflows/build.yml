@@ -38,14 +38,18 @@ jobs:
       - name: Build firmware
         run: make -C Debug/ all
 
-      - name: Confirm binary exists
+      - name: Confirm artifacts exist
         run: |
-          ls -lh Debug/StatorTester.bin
+          ls -lh Debug/StatorTester.bin Debug/StatorTester.hex Debug/StatorTester.elf Debug/StatorTester.map
           echo "Build successful — binary size: $(wc -c < Debug/StatorTester.bin) bytes"
 
-      - name: Upload firmware binary as artifact
+      - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
           name: StatorTester-firmware-${{ github.sha }}
-          path: Debug/StatorTester.bin
+          path: |
+            Debug/StatorTester.bin
+            Debug/StatorTester.hex
+            Debug/StatorTester.elf
+            Debug/StatorTester.map
           retention-days: 90

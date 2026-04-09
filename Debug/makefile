@@ -59,6 +59,9 @@ StatorTester.list \
 OBJCOPY_BIN += \
 StatorTester.bin \
 
+OBJCOPY_HEX += \
+StatorTester.hex \
+
 
 # All Target
 all:
@@ -88,16 +91,22 @@ StatorTester.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
+StatorTester.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O ihex $(EXECUTABLES) "StatorTester.hex"
+	@echo 'Finished building: $@'
+	@echo ' '
+
 # Other Targets
 clean:
-	-$(RM) StatorTester.bin StatorTester.elf StatorTester.list StatorTester.map default.size.stdout
+	-$(RM) StatorTester.bin StatorTester.hex StatorTester.elf StatorTester.list StatorTester.map default.size.stdout
 	-@echo ' '
 
 post-build:
 	arm-none-eabi-objcopy -O binary "StatorTester.elf" "StatorTester.bin" 2>/dev/null || arm-none-eabi-objcopy.exe -O binary "StatorTester.elf" "StatorTester.bin"
+	arm-none-eabi-objcopy -O ihex "StatorTester.elf" "StatorTester.hex" 2>/dev/null || arm-none-eabi-objcopy.exe -O ihex "StatorTester.elf" "StatorTester.hex"
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN) $(OBJCOPY_HEX)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'
