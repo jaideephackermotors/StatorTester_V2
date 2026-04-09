@@ -990,6 +990,23 @@ void Set_RegulatorPWM(uint32_t val)
 	TIM1->CCR1 = (uint16_t)val;
 }
 
+/* Update Voltcraft supply voltage/current via I2C only.
+ * Safe to call while motor is running — no relay or pre-charge toggling.
+ * voltage and current are in the same units as Flag.Voltage (0.1V / 0.1A),
+ * multiplied by 10 internally to match the supply register format (10mV / 10mA). */
+void UpdateVoltcraftVoltage(uint32_t voltage, uint32_t current)
+{
+	uint8_t mArray[2];
+	voltage *= 10;
+	current *= 10;
+	mArray[0]=(uint8_t)voltage;
+	mArray[1]=(uint8_t)(voltage>>8);
+	HAL_I2C_Mem_Write(&hi2c1,(uint16_t)I2C_ADDRESS, 0x70, I2C_MEMADD_SIZE_8BIT, (uint8_t *)mArray, 2, 100);
+	mArray[0]=(uint8_t)current;
+	mArray[1]=(uint8_t)(current>>8);
+	HAL_I2C_Mem_Write(&hi2c1,(uint16_t)I2C_ADDRESS, 0x72, I2C_MEMADD_SIZE_8BIT, (uint8_t *)mArray, 2, 100);
+}
+
 
 void Set_GOMConnectAllPhaseOff(void)
 {
@@ -1549,11 +1566,34 @@ void StartStateMachineTask(void const * argument)
 			case MAIN_START_REGULATOR:CalStep=StateTester;
 				if(Flag.SpinMotor)
 				{
-					ConnectVoltcraft(ON,Flag.Voltage,Flag.Current);
-					Set_RegulatorPWM(1000);
-					osDelay(1000);
-					Set_RegulatorPWM(Flag.Impuls);
-					osDelay(Tset.TimeMotorRun*1000);
+					if(Flag.GearVoltage > 0)
+					{
+						/* --- GEAR WARMUP PHASE ---
+						 * Power on at run-in voltage, spin motor continuously.
+						 * No measurement is taken here — grease/gear activates. */
+						ConnectVoltcraft(ON,Flag.GearVoltage,Flag.Current);
+						Set_RegulatorPWM(1000);
+						osDelay(1000);
+						Set_RegulatorPWM(Flag.Impuls);
+						osDelay((uint32_t)Tset.TimeGearRun*1000);
+
+						/* --- VOLTAGE SWITCH (motor keeps spinning) ---
+						 * Only update I2C registers — relay and pre-charge are
+						 * already active, do NOT call ConnectVoltcraft again. */
+						UpdateVoltcraftVoltage(Flag.Voltage, Flag.Current);
+						osDelay(500); /* allow supply output to settle */
+					}
+					else
+					{
+						/* Standard non-geared motor startup */
+						ConnectVoltcraft(ON,Flag.Voltage,Flag.Current);
+						Set_RegulatorPWM(1000);
+						osDelay(1000);
+						Set_RegulatorPWM(Flag.Impuls);
+					}
+
+					/* --- MEASUREMENT PHASE --- */
+					osDelay((uint32_t)Tset.TimeMotorRun*1000);
 					CallValue = RPMval;
 					MotorUo = MotorSource.Voltage;
 					MotorKV = (CallValue*100/MotorUo);
