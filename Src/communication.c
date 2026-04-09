@@ -508,6 +508,12 @@ void USBDataResult(void){
 					Tset.TimeResMeasure = data[1];
 					break;
 
+				case USBcom_ConfigGear:
+					if(data[0]<=600){Flag.GearVoltage=data[0];}else{WError=TRUE;}
+					if(data[1]<=3600){Tset.TimeGearRun=data[1];}else{WError=TRUE;}
+					size = USB_SendConfirmation(USB_Txbuffer,USBcomAnswer_ConfigGear,WError);
+					break;
+
 				default:
 					request=USBcom_Default;
 					break;
