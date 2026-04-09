@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth:*)",
+      "Bash(git --version)",
+      "Bash(git config:*)",
+      "Bash(where gh:*)",
+      "Read(//c/Program Files/GitHub CLI//**)",
+      "Bash(\"/c/Users/hacke/AppData/Local/GitHubDesktop/bin/gh.exe\" --version)",
+      "Bash(cmd.exe /c \"gh --version\")",
+      "Bash(cmd.exe /c \"where gh 2>&1\")",
+      "Read(//c/Users/hacke/AppData/Local/Programs/**)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth status)"
+    ]
+  }
+}
