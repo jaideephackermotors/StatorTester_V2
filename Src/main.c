@@ -1596,7 +1596,7 @@ void StartStateMachineTask(void const * argument)
 					osDelay((uint32_t)Tset.TimeMotorRun*1000);
 					CallValue = RPMval;
 					MotorUo = MotorSource.Voltage;
-					MotorKV = (CallValue*100/MotorUo);
+					MotorKV = (MotorUo > 0) ? (CallValue*100/MotorUo) : 0;
 					MotorIo = MotorSource.Current_A;
 					MotorRpm = CallValue;
 					MotorDirection = Direction;
