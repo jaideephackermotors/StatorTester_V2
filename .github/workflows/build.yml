@@ -1,0 +1,48 @@
+name: STM32 Firmware Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install ARM GCC toolchain and make
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi make
+
+      - name: Verify toolchain
+        run: arm-none-eabi-gcc --version
+
+      - name: Create build output directories
+        run: |
+          mkdir -p Debug/Src
+          mkdir -p Debug/Drivers/STM32F4xx_HAL_Driver/Src
+          mkdir -p Debug/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
+          mkdir -p Debug/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
+          mkdir -p Debug/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang
+          mkdir -p Debug/Middlewares/Third_Party/FreeRTOS/Source
+          mkdir -p Debug/startup
+
+      - name: Build firmware
+        run: make -C Debug/ all
+
+      - name: Confirm binary exists
+        run: |
+          ls -lh Debug/StatorTester.bin
+          echo "Build successful — binary size: $(wc -c < Debug/StatorTester.bin) bytes"
+
+      - name: Upload firmware binary as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StatorTester-firmware-${{ github.sha }}
+          path: Debug/StatorTester.bin
+          retention-days: 90

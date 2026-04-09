@@ -1,13 +1,14 @@
-# Build output
-Debug/
-Release/
+# Build output artifacts (keep makefiles, exclude compiled objects/binaries)
 *.o
 *.d
+*.su
+*.cyclo
 *.elf
 *.bin
 *.hex
 *.map
-*.lst
+Debug/StatorTester.list
+default.size.stdout
 
 # IDE files
 .settings/
